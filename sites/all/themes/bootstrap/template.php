@@ -46,7 +46,10 @@ function bootstrap_theme(&$existing, $type, $theme, $path) {
   bootstrap_include($theme, 'theme/registry.inc');
   return _bootstrap_theme($existing, $type, $theme, $path);
 }
-
+/*function bootstrap_form_alter(&$form, &$form_state, $form_id) {
+    global $user;
+    $form['field_username']['#default_value'] = array($user->uid => $user->name);
+}*/
 /**
  * Declare various hook_*_alter() hooks.
  *
@@ -54,3 +57,5 @@ function bootstrap_theme(&$existing, $type, $theme, $path) {
  * they are properly detected when drupal_alter() is invoked.
  */
 bootstrap_include('bootstrap', 'theme/alter.inc');
+
+

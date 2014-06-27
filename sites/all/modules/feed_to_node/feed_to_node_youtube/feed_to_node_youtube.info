@@ -1,0 +1,12 @@
+name = Feed to node: Youtube
+package = "feed to node"
+description = Create the feed you want from youtube here: https://gdata.youtube.com/demo/index.html
+core = 7.x
+dependencies[] = feed_to_node
+
+; Information added by drupal.org packaging script on 2013-10-24
+version = "7.x-1.0"
+core = "7.x"
+project = "feed_to_node"
+datestamp = "1382650828"
+

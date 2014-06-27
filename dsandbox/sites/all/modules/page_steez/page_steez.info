@@ -1,0 +1,4 @@
+name = Page Steez
+description = Adds the ability to pull content from any menu entry and put that into Pages. Yes, that's right.
+core = 7.x
+version = 7.x-1.0-dev

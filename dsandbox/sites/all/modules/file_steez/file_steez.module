@@ -1,0 +1,160 @@
+<?php
+
+/***********************************************
+ * File uploads are an important aspect of this site.
+ * Thus we need to make sure we can harness the file and field API on both the
+ * front end and back end to suit our needs. This module will, among other things,
+ * define pages where users can upload files to the site and groups they are members of
+
+/** Implements hook_ctools_plugin_directory **/
+function file_steez_ctools_plugin_directory($owner, $plugin_type) {
+  // we'll be nice and limit scandir() calls
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/content_types';
+  }
+}
+
+function file_steez_preprocess_file_widget(&$vars) {
+  //print '<pre>' . print_r(debug_backtrace(), 1) . '</pre>';
+  //print '<pre>' . print_r($vars, 1) . '</pre>';
+}
+
+/** Define the form to upload a file to the group **/
+function file_steez_file_upload_form($form, &$form_state, $node_id) {
+  $node = node_load($node_id);
+  
+  field_attach_form('node', $node, $form, $form_state);
+  //drupal_set_message(printr($form_state));
+  $form = array('file_upload' => $form['field_group_files']);
+  
+  // we want this form to be for uploading new files only
+  // so get rid of any default values
+  if (!$form_state['rebuild']) {
+    $files = $form['file_upload']['und'];
+    foreach ($files as $delta => $file) {
+      if (is_numeric($delta)) {
+        if ($form['file_upload']['und'][$delta]['#default_value']['fid']) {
+          unset($form['file_upload']['und'][$delta]);
+        }
+      }
+    }
+  }
+
+  $form['#nid'] = $node->nid;
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+    '#weight' => 1000,
+  );
+  
+  return $form;
+}
+
+/** Define the form that allows administrators to upload a logo to a group **/
+function file_steez_file_upload_logo_form($form, &$form_state, $node_id) {
+  $form['#nid'] = $node_id;
+  
+  $node = node_load($node_id);
+  //print printr($node);
+  field_attach_form('node', $node, $form, $form_state);
+  $form = array('logo_upload' => $form['field_group_logo']);
+  $form['logo_upload']['und'][0]['#title_display'] = 'invisible';
+  $form['#nid'] = $node->nid;
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+    '#weight' => 1000,
+  );
+  
+  ///drupal_set_message(printr($form));
+  
+  return $form;
+}
+
+/** Define the form that lets users upload files on their profile.
+ *  These files won't be associated with any particular group.
+ */
+function file_steez_file_profile_upload_form($form, &$form_state, $user_id) {
+  //print 'wut';
+  $user = user_load($user_id);
+  
+  field_attach_form('user', $user, $form, $form_state);
+  //drupal_set_message(printr($form_state));
+  $form = array('file_upload' => $form['field_profile_files']);
+  
+  // we want this form to be for uploading new files only
+  // so get rid of any default values
+  if (!$form_state['rebuild']) {
+    $files = $form['file_upload']['und'];
+    foreach ($files as $delta => $file) {
+      if (is_numeric($delta)) {
+        if ($form['file_upload']['und'][$delta]['#default_value']['fid']) {
+          unset($form['file_upload']['und'][$delta]);
+        }
+      }
+    }
+  }
+  
+  $form['#uid'] = $user->uid;
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+    '#weight' => 1000,
+  );
+  
+  //printr($form);
+  
+  return $form;
+}
+
+
+/***************** Form submit functions **************/
+
+function file_steez_file_upload_form_submit($form, &$form_state) {
+  //drupal_set_message(printr($form_state['values']));
+  //return;
+  // Load the file via file.fid.
+  //if (isset($form_state['values']['file_upload']))
+  $node = node_load($form['#nid']);
+  foreach ($form_state['values']['file_upload']['und'] as $upload) {
+    if ($upload['fid']) {
+      $file = file_load($upload['fid']);
+      $file->status = FILE_STATUS_PERMANENT;
+      file_save($file);
+      $node->field_group_files['und'][] = array('fid' => $file->fid, 'display' => 1);
+    }
+  }
+  // Record that the module (in this example, user module) is using the file. 
+  //file_usage_add($file, 'file_steez', 'node', $form['#nid']);
+  node_save($node);
+  drupal_set_message(t('Thanks for uploading!!!!'));
+}
+
+function file_steez_file_upload_logo_form_submit($form, &$form_state) {
+  $node = node_load($form['#nid']);
+  
+  // Load the file via file.fid.
+  if ($file = file_load($form_state['values']['logo_upload']['und'][0]['fid'])) {
+
+    // Change status to permanent.
+    $file->status = FILE_STATUS_PERMANENT;
+    // Save.
+    file_save($file);
+  
+    // Record that the module (in this example, user module) is using the file. 
+    //file_usage_add($file, 'file_steez', 'node', $form['#nid']);
+    $node->field_group_logo['und'][0]['fid'] = $file->fid;
+    
+    drupal_set_message(t('The logo has been uploaded.'));
+  }
+  else {
+    $node->field_group_logo = array();
+    drupal_set_message('You... how could you?');
+  }
+  
+  node_save($node);
+}
+
+function file_steez_file_profile_upload_form_submit($form, &$form_state) {
+  $form_state['redirect'] = 'user/' . $form['#uid'] . '/files';
+}

@@ -3,10 +3,26 @@ description = Register Boostrap as a library by installing files in /sites/all/l
 package = Twitter Bootstrap
 core = 7.x
 
+dependencies[] = libraries
+
 configure = admin/config/development/bootstrap_library
-; Information added by Drupal.org packaging script on 2014-01-14
-version = "7.x-1.0"
+; Information added by Drupal.org packaging script on 2014-03-05
+version = "7.x-1.0+2-dev"
 core = "7.x"
 project = "bootstrap_library"
-datestamp = "1389716305"
+datestamp = "1394044114"
+
+
+; Information added by Drupal.org packaging script on 2014-04-09
+version = "7.x-1.1"
+core = "7.x"
+project = "bootstrap_library"
+datestamp = "1397009088"
+
+
+; Information added by Drupal.org packaging script on 2014-05-11
+version = "7.x-1.4"
+core = "7.x"
+project = "bootstrap_library"
+datestamp = "1399825431"
 

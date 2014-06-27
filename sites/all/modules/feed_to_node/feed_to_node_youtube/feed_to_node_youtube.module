@@ -1,0 +1,276 @@
+<?php
+
+/**
+ * @file
+ * Parsing of youtube api data(feed).
+ */
+
+/**
+ * Implements hook_feed2node_info().
+ * @desc This hook is needed to be able for users to pick this as 
+ * there feed type.
+ * Make sure the first layer of the array key is unique, 
+ * in this case 'youtube_feed'.
+ */
+function feed_to_node_youtube_feed2node_info() {
+  $info = array();
+
+  $info['youtube_feed']['name'] = 'Youtube'; // Display name of the feed type
+  $info['youtube_feed']['parser'] = 'feed_to_node_youtube_parser'; // The parser
+  // of the feed that will give the needed items in a array
+  $info['youtube_feed']['token'] = 'youtube_feed'; // Token type
+  // set the description for the feed, in case there is anything special
+  // the user should do before or while entering the feed url.
+  $info['youtube_feed']['description'] = 'Create a youtube query ' . l(t('https://gdata.youtube.com/demo/index.html'), 'https://gdata.youtube.com/demo/index.html') . ' make sure you copy the entire url from "Resulting URI".<br />'
+      . 'The following setting must be used for the feed to work properly:'
+      . '<ul><li>Projection: Programmatic access</li>'
+      . '<li>Output format: JSON</li>'
+      . '<li>Video format: 5 - Embeddable player (atleast)</li></ul>'
+      . 'Example url: http://gdata.youtube.com/feeds/api/videos?alt=json&q=drupal&format=5 ';
+
+  return $info;
+}
+
+/**
+ * Implements hook_token_info().
+ */
+function feed_to_node_youtube_token_info() {
+  $type = array(
+    'name' => t('Youtube feed'),
+    'description' => t('Tokens related to items in a youtube feed.'),
+    'needs-data' => 'youtube_feed',
+  );
+
+  $feed = array();
+  // Core tokens for nodes.
+  $feed['id'] = array(
+    'name' => t("Youtube ID"),
+    'description' => t("The unique ID of a youtube video."),
+  );
+
+  $feed['published'] = array(
+    'name' => t("Published"),
+    'description' => t("Published date of the video."),
+    'type' => 'feed2node_date',
+  );
+
+  $feed['updated'] = array(
+    'name' => t("Updated"),
+    'description' => t("Updated date of the video."),
+    'type' => 'feed2node_date',
+  );
+
+  $feed['title'] = array(
+    'name' => t("Title"),
+    'description' => t("Title of the video."),
+  );
+
+  $feed['description'] = array(
+    'name' => t("Description"),
+    'description' => t("Description of the video."),
+  );
+
+  $feed['embed_video'] = array(
+    'name' => t("Embedded video"),
+    'description' => t("The embedded html video"),
+  );
+
+  $feed['embed_url'] = array(
+    'name' => t("Embedded url"),
+    'description' => t("The url that can be used to embed youtube video's"),
+  );
+
+  $feed['embed_type'] = array(
+    'name' => t("Embedded type"),
+    'description' => t("The type of video that is gonna be embedded"),
+  );
+
+  $feed['length'] = array(
+    'name' => t("Video length"),
+    'description' => t("The duration of the video in seconds"),
+  );
+
+  $feed['link'] = array(
+    'name' => t("Video link"),
+    'description' => t("The url to the youtube video page"),
+  );
+
+  $feed['link_comments'] = array(
+    'name' => t("Video comments link"),
+    'description' => t("The url to the youtube video comment page"),
+  );
+
+  $feed['link_uploader'] = array(
+    'name' => t("Uploader  link"),
+    'description' => t("The url to the youtube video uploaders page"),
+  );
+
+  $feed['author'] = array(
+    'name' => t("Author"),
+    'description' => t("The name of the author of the youtube video."),
+  );
+
+  $feed['thumbnail_default'] = array(
+    'name' => t("Thumbnail default"),
+    'description' => t("Thumbnail of video (height: 90, width: 120)"),
+  );
+
+  $feed['thumbnail_mqdefault'] = array(
+    'name' => t("Thumbnail medium"),
+    'description' => t("Thumbnail of video (height: 180, width: 320)"),
+  );
+
+  $feed['thumbnail_hqdefault'] = array(
+    'name' => t("Thumbnail high"),
+    'description' => t("Thumbnail of video (height: 360, width: 480)"),
+  );
+
+  $feed['category_labels'] = array(
+    'name' => t("Category labels"),
+    'description' => t("List of all the categories as seen in youtube, separated with comma."),
+  );
+
+  $feed['category_terms'] = array(
+    'name' => t("Category terms"),
+    'description' => t("List of all the categories as machine name used by google, separated with comma."),
+  );
+
+  return array(
+    'types' => array('youtube_feed' => $type),
+    'tokens' => array('youtube_feed' => $feed),
+  );
+}
+
+/**
+ * Implemtens hook_tokens().
+ */
+function feed_to_node_youtube_tokens($type, $tokens, $data = array(), $options = array()) {
+  $replacements = array();
+  if ($type == 'youtube_feed' && !empty($data['youtube_feed'])) {
+    $feed = $data['youtube_feed'];
+
+    foreach ($tokens as $name => $original) {
+      $name = explode(':', $name, 2);
+      switch ($name[0]) {
+        case 'id':
+          $replacements[$original] = $feed['id']['$t'];
+          break;
+
+        case 'published':
+          $date = $feed['published']['$t'];
+          if (!empty($name[1])) {
+            $date = token_replace('[feed2node_date:' . $name[1] . ']', $data = array('feed2node_date' => $date));
+          }
+          $replacements[$original] = $date;
+          break;
+
+        case 'updated':
+          $date = $feed['updated']['$t'];
+          if (!empty($name[1])) {
+            $date = token_replace('[feed2node_date:' . $name[1] . ']', $data = array('feed2node_date' => $date));
+          }
+          $replacements[$original] = $date;
+          break;
+
+        case 'updated_unix':
+          $replacements[$original] = strtotime($feed['updated']['$t']);
+          break;
+
+        case 'title':
+          $replacements[$original] = $feed['title']['$t'];
+          break;
+
+        case 'description':
+          $replacements[$original] = $feed['media$group']['media$description']['$t'];
+          break;
+
+        case 'embed_video':
+          $replacements[$original] = '<iframe class="youtube_feed_video" src="' . $feed['media$group']['media$content'][0]['url'] . '" frameborder="0" allowfullscreen></iframe>';
+          break;
+
+        case 'embed_url':
+          $replacements[$original] = $feed['media$group']['media$content'][0]['url'];
+          break;
+
+        case 'embed_type':
+          $replacements[$original] = $feed['media$group']['media$content'][0]['type'];
+          break;
+
+        case 'length':
+          $replacements[$original] = $feed['media$group']['media$content'][0]['duration'];
+          break;
+
+        case 'link':
+          $replacements[$original] = $feed['link'][0]['href'];
+          break;
+
+        case 'link_comments':
+          $replacements[$original] = $feed['link'][1]['href'];
+          break;
+
+        case 'link_uploader':
+          $replacements[$original] = !empty($feed['link'][4]['href']) ? $feed['link'][4]['href'] : '';
+          break;
+
+        case 'author':
+          $replacements[$original] = $feed['author'][0]['name']['$t'];
+          break;
+
+        case 'thumbnail_default':
+          $replacements[$original] = $feed['media$group']['media$thumbnail'][0]['url'];
+          break;
+
+        case 'thumbnail_mqdefault':
+          $replacements[$original] = $feed['media$group']['media$thumbnail'][1]['url'];
+          break;
+
+        case 'thumbnail_hqdefault':
+          $replacements[$original] = $feed['media$group']['media$thumbnail'][2]['url'];
+          break;
+
+        case 'category_labels':
+          $categorie = '';
+          if (!empty($feed['media$group']['media$category'])) {
+            foreach ($feed['media$group']['media$category'] as $cat) {
+              $categories[] = $cat['label'];
+            }
+            $categorie = implode(',', $categories);
+          }
+          $replacements[$original] = $categorie;
+          break;
+
+        case 'category_terms':
+          $categorie = '';
+          if (!empty($feed['media$group']['media$category'])) {
+            foreach ($feed['media$group']['media$category'] as $cat) {
+              $categories[] = $cat['$t'];
+            }
+            $categorie = implode(',', $categories);
+          }
+          $replacements[$original] = $categorie;
+          break;
+      }
+    }
+  }
+  return $replacements;
+}
+
+/**
+ * Get list of item from the feed.
+ * 
+ * @param string $feed
+ *   Feed contains the contents of the url that was callled.
+ * 
+ * @return array
+ *   The function that calls this function expects an list of items.
+ */
+function feed_to_node_youtube_parser($feed) {
+  $data = drupal_json_decode($feed);
+  $feed_items = $data['feed']['entry'];
+  $items = array();
+  foreach ($feed_items as $item) {
+    $items[$item['id']['$t']] = $item;
+  }
+
+  return $items;
+}

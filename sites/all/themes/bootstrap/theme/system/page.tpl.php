@@ -78,13 +78,18 @@
     <div class="navbar-header">
       <?php if ($logo): ?>
       <a class="logo navbar-btn pull-left" href="<?php print $front_page; ?>" title="<?php print t('Home'); ?>">
-        <img src="<?php print $logo; ?>" alt="<?php print t('Home'); ?>" />
+        <img src="<?php print $logo; ?>" alt="<?php print t('Home'); ?>" height="90px" />
       </a>
       <?php endif; ?>
 
       <?php if (!empty($site_name)): ?>
       <a class="name navbar-brand" href="<?php print $front_page; ?>" title="<?php print t('Home'); ?>"><?php print $site_name; ?></a>
       <?php endif; ?>
+<?php $sform=drupal_get_form('search_form');  print drupal_render($sform); ?></div><div style="float:right; padding:20px">
+<button type="button" class="btn"><a href="../../online-forms" >Request Service</a></button></div>
+</div>
+
+</header>
 
       <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
       <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -94,25 +99,21 @@
         <span class="icon-bar"></span>
       </button>
     </div>
-
-    <?php if (!empty($primary_nav) || !empty($secondary_nav) || !empty($page['navigation'])): ?>
-      <div class="navbar-collapse collapse">
-        <nav role="navigation">
-          <?php if (!empty($primary_nav)): ?>
-            <?php print render($primary_nav); ?>
-          <?php endif; ?>
-          <?php if (!empty($secondary_nav)): ?>
-            <?php print render($secondary_nav); ?>
-          <?php endif; ?>
-          <?php if (!empty($page['navigation'])): ?>
-            <?php print render($page['navigation']); ?>
-          <?php endif; ?>
-        </nav>
-      </div>
-    <?php endif; ?>
+<?php if (!empty($primary_nav) || !empty($secondary_nav) || !empty($page['navigation'])): ?>
+<div class="navbar-collapse collapse">
+<nav role="navigation">
+<?php if (!empty($primary_nav)): ?>
+<?php endif; ?>
+<?php if (!empty($secondary_nav)): ?>
+<?php print render($secondary_nav); ?>
+<?php endif; ?>
+</nav></div>
+<?php endif; ?>
   </div>
-</header>
 
+<?php if (!empty($page['navigation'])): ?>
+<?php print render($page['navigation']); ?>
+<?php endif; ?>
 <div class="main-container container">
 
   <header role="banner" id="page-header">
@@ -138,7 +139,7 @@
       <?php if (!empty($breadcrumb)): print $breadcrumb; endif;?>
       <a id="main-content"></a>
       <?php print render($title_prefix); ?>
-      <?php if (!empty($title)): ?>
+      <?php if (!empty($title)&& !$is_front): ?>
         <h1 class="page-header"><?php print $title; ?></h1>
       <?php endif; ?>
       <?php print render($title_suffix); ?>
@@ -152,8 +153,48 @@
       <?php if (!empty($action_links)): ?>
         <ul class="action-links"><?php print render($action_links); ?></ul>
       <?php endif; ?>
-      <?php print render($page['content']); ?>
+      
+      <?php if (!empty($page['half_1'])): ?>
+    <div class="halfer">
+        <div class="inliner panel-panel">
+            <?php print render($page['half_1']);?>
+    </div></div>
+    <?php endif; ?>
+    
+     <?php if (!empty($page['half_2'])): ?>
+    <div class="halfer">
+        <div class="inliner panel-panel">
+            <?php print render($page['half_2']);?>
+    </div></div>
+    <?php endif; ?>
+    
+      <?php if(!$is_front){ print render($page['content']);} ?>
     </section>
+		
+     
+
+
+    <?php if (!empty($page['panel_1'])): ?>
+    <div class="inliner">
+        <div class="inliner panel-panel">
+            <?php print render($page['panel_1']);?>
+    </div></div>
+    <?php endif; ?>
+
+    <?php if (!empty($page['panel_2'])): ?>
+    <div class="inliner">
+        <div class="inliner panel-panel">
+            <?php print render($page['panel_2']);?>
+    </div></div>
+    <?php endif; ?>
+
+    <?php if (!empty($page['panel_3'])): ?>
+    <div class="inliner">
+        <div class="inliner panel-panel">
+            <?php print render($page['panel_3']);?>
+    </div></div>
+    <?php endif; ?>
+
 
     <?php if (!empty($page['sidebar_second'])): ?>
       <aside class="col-sm-3" role="complementary">
@@ -164,5 +205,40 @@
   </div>
 </div>
 <footer class="footer container">
+<?php if (!empty($page['footer_1'])): ?>
+<div class="inliner">
+<div class="inliner panel-panel">
+<?php print render($page['footer_1']);?>
+</div></div>
+<?php endif; ?>
+
+<?php if (!empty($page['footer_2'])): ?>
+<div class="inliner">
+<div class="inliner panel-panel">
+<?php print render($page['footer_2']);?>
+</div></div>
+<?php endif; ?>
+
+<?php if (!empty($page['footer_3'])): ?>
+<div class="inliner">
+<div class="inliner panel-panel">
+<?php print render($page['footer_3']);?>
+</div></div>
+<?php endif; ?>
+
+<?php if (!empty($page['footer_4'])): ?>
+<div class="inliner">
+<div class="inliner panel-panel">
+<?php print render($page['footer_4']);?>
+</div></div>
+<?php endif; ?>
+
+<?php if (!empty($page['footer_5'])): ?>
+<div class="inliner">
+<div class="inliner panel-panel">
+<?php print render($page['footer_5']);?>
+</div></div>
+<?php endif; ?>
+
   <?php print render($page['footer']); ?>
 </footer>

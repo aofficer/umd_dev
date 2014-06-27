@@ -18,6 +18,19 @@ regions[footer]         = 'Footer'
 regions[page_top]       = 'Page top'
 regions[page_bottom]    = 'Page bottom'
 
+; panel regions
+regions[half_1] = 'Half 1'
+regions[half_2] = 'Half 2'
+
+regions[panel_1] = 'Panel 1'
+regions[panel_2] = 'Panel 2'
+regions[panel_3] = 'Panel 3'
+
+regions[footer_1] = 'Footer 1'
+regions[footer_2] = 'Footer 2'
+regions[footer_3] = 'Footer 3'
+regions[footer_4] = 'Footer 4'
+regions[footer_5] = 'Footer 5'
 
 ;;;;;;;;;;;;;;;;;;;;;
 ;; Theme Settings

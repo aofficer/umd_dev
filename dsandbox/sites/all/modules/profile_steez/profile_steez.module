@@ -1,0 +1,111 @@
+<?php
+
+/***********************************
+ * There are many things we would like to do to the profile to get it to bend to our will.
+ * WE are using Profile 2 to define different profile types and tap in to the field API
+ * to steezify everything in the land. But we don't like the way Profile 2 displays things
+ * we want to write a Ctools plugin that will grab content from Profile 2 and allow us to
+ * display it however the hell we want. Additionally we want to provide some links on the
+ * profile pages so that users can edit them.
+
+/** Implements hook_ctools_plugin_directory **/
+function profile_steez_ctools_plugin_directory($owner, $plugin_type) {
+  // we'll be nice and limit scandir() calls
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/content_types';
+  }
+}
+
+/** Implements hook_menu_local_tasks_alter().
+ *  We want to add an edit link local action for each profile type. **/
+function profile_steez_menu_local_tasks_alter(&$data, $router_item, $root_path) {
+  $profile_types = profile2_get_types();
+  foreach ($profile_types as $type_name => $type) {
+    if ($root_path == 'user/%/' . $type_name) {
+      $uid = $router_item['page_arguments'][1]->argument;
+      $item = menu_get_item('profile-' . $type_name . '/' . $uid . '/edit');
+      //print_r($item);
+      //print 'profile-' . $type_name . '/' . $uid . '/edit';
+      //drupal_set_message(printr($item));
+      if ($item['access']) {
+        $item['title'] = t('Edit');
+        $data['actions']['output'][] = array(
+          '#theme' => 'menu_local_action',
+          '#link' => $item,
+        );
+      }
+      //drupal_set_message(printr($router_item));
+    }
+    elseif ($root_path == 'profile-' . $type_name . '/%/edit') {
+      //printr($router_item['page_arguments']);
+      // get rid of those silly tabs
+      //printr($type);
+      drupal_add_css('#tasks ul.tabs {}', array('type' => 'inline'));
+      $uid = $router_item['page_arguments'][1]->uid;
+      $item = menu_get_item('user/' . $uid . '/' . $type_name);
+      if ($item['access']) {
+        $item['title'] = t('Back to !type_label profile', array('!type_label' => $type->label));
+        $data['actions']['output'][] = array(
+          '#theme' => 'menu_local_action',
+          '#link' => $item,
+        );
+      }
+    }
+  }
+  
+  if ($root_path == 'user/%/edit') {
+   // printr($router_item['page_arguments'][1]);
+    $uid = $router_item['page_arguments'][1]->uid;
+    $item = menu_get_item('user/' . $uid);
+    if ($item['access']) {
+      //print 'wut';
+      $item['title'] = t('Back to profile');
+      $data['actions']['output'][] = array(
+        '#theme' => 'menu_local_action',
+        '#link' => $item,
+      );
+    }
+  }
+  //print $root_path;
+}
+
+/** Implements hook_menu_alter() **/
+function profile_steez_menu_alter(&$items) {
+  //printr($items);
+  // we want to untabify all these things
+  $items['user/%user/shortcuts']['type'] = MENU_CALLBACK;
+  $items['user/%user/points']['type'] = MENU_CALLBACK;
+  $items['user/%user/edit']['type'] = MENU_CALLBACK;
+  $items['user/%user/edit']['title'] = 'Edit account settings';
+  $items['user/%user_category/edit/account']['type'] = MENU_CALLBACK;
+  $items['user/%user_category/edit/account']['title'] = 'Edit account settings';
+  //$items['']
+  foreach (profile2_get_types() as $type_name => $type) {
+    
+  }
+}
+
+/** Implements hook_admin_paths_alter() **/
+function profile_steez_admin_paths_alter(&$paths) {
+  //printr($paths);
+  unset($paths['user/*/edit']);
+  unset($paths['user/*/edit/*']);
+  //unset($paths['user/%user/edit']);
+  //unset($paths['user/&user_category/edit/account']);
+}
+
+/** Implements hook_form_FORM_ID_alter() **/
+function profile_steez_form_profile2_form_alter(&$form, &$form_state, $form_id) {
+  //printr($form_state['profile2']);
+  if (isset($form_state['op'])) {
+    if ($form_state['op'] == 'edit') {
+      // make sure submission of this form redirects us back to the profile
+      $form['#submit'][] = 'profile_steez_profile_form_submit_redirect';
+    }
+  }
+  
+}
+
+function profile_steez_profile_form_submit_redirect($form, &$form_state) {
+  $form_state['redirect'] = 'user/' . $form_state['profile2']->uid . '/' . $form_state['profile2']->type;
+}
